@@ -639,6 +639,15 @@
                     }
                   }
                 };
+                
+                tree.expandLevel = function (defaultLevel) {
+                  expand_level = defaultLevel;
+
+                  return for_each_branch(function (b, level) {
+                    return b.expanded = b.level < expand_level;
+                  });
+                };
+                
                 return tree.select_prev_branch = function (b) {
                   var prev;
                   if (b == null) {
