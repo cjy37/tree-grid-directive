@@ -661,6 +661,13 @@
                                         }
                                     }
                                 };
+                                tree.expandLevel = function (defaultLevel) {
+                                  var _expand_level = defaultLevel || expand_level;
+
+                                  return for_each_branch(function (b, level) {
+                                    return b.expanded = b.level < _expand_level;
+                                  });
+                                };
                                 return tree.select_prev_branch = function (b) {
                                     var prev;
                                     if (b == null) {
