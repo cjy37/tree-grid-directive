@@ -153,7 +153,7 @@
                 "Population": 718212004,
                 "TimeZone": "BST"
             }
-            ];
+        ];
 
 
         var myTreeData = getTree(rawTreeData, 'DemographicId', 'ParentId');
@@ -163,29 +163,31 @@
         $scope.expanding_property = {
             field: "Name",
             displayName: "Demographic Name",
-			sortable : true,
-			filterable: true
+            sortable: true,
+            filterable: true,
+            cellTemplate: "<i>{{row.branch[expandingProperty.field]}}</i>"
         };
         $scope.col_defs = [
             {
                 field: "Description",
-				sortable : true,										
-				sortingType : "string"
+                sortable: true,
+                sortingType: "string"
             },
             {
                 field: "Area",
-				sortable : true,										
-				sortingType : "number",
-				filterable: true
+                sortable: true,
+                sortingType: "number",
+                filterable: true
             },
             {
                 field: "Population",
-				sortable : true,										
-				sortingType : "number"
+                sortable: true,
+                sortingType: "number"
             },
             {
                 field: "TimeZone",
-                displayName: "Time Zone"
+                displayName: "Time Zone",
+                cellTemplate: "<strong>{{row.branch[col.field]}}</strong>"
             }
         ];
         $scope.my_tree_handler = function (branch) {
@@ -193,41 +195,59 @@
         }
 
         function getTree(data, primaryIdName, parentIdName) {
-            if (!data || data.length == 0 || !primaryIdName || !parentIdName)
-                return [];
+          if (!data || data.length == 0 || !primaryIdName || !parentIdName)
+              return [];
 
-            var tree = [],
-                rootIds = [],
-                item = data[0],
-                primaryKey = item[primaryIdName],
-                treeObjs = {},
-                parentId,
-                parent,
-                len = data.length,
-                i = 0;
+          var tree = [],
+          rootIds = [],
+          item = data[0],
+          primaryKey = item[primaryIdName],
+          treeObjs = {},
+              tempChildren = {},
+          parentId,
+          parent,
+          len = data.length,
+          i = 0;
 
-            while (i < len) {
-                item = data[i++];
-                primaryKey = item[primaryIdName];
-                treeObjs[primaryKey] = item;
-                parentId = item[parentIdName];
+          while (i < len) {
+              item = data[i++];
+              primaryKey = item[primaryIdName];
 
-                if (parentId) {
-                    parent = treeObjs[parentId];
+              if (tempChildren[primaryKey]) {
+                  item.children = tempChildren[primaryKey];
+                  delete tempChildren[primaryKey];
+              }
 
-                    if (parent.children) {
-                        parent.children.push(item);
-                    } else {
-                        parent.children = [item];
-                    }
-                } else {
-                    rootIds.push(primaryKey);
-                }
-            }
+              treeObjs[primaryKey] = item;
+              parentId = item[parentIdName];
 
-            for (var i = 0; i < rootIds.length; i++) {
-                tree.push(treeObjs[rootIds[i]]);
-            };
+              if (parentId) {
+                  parent = treeObjs[parentId];
+
+                  if (!parent) {
+                      var siblings = tempChildren[parentId];
+                      if (siblings) {
+                          siblings.push(item);
+                      }
+                      else {
+                          tempChildren[parentId] = [item];
+                      }
+                  }
+                  else if (parent.children) {
+                      parent.children.push(item);
+                  }
+                  else {
+                      parent.children = [item];
+                  }
+              }
+              else {
+                  rootIds.push(primaryKey);
+              }
+          }
+
+          for (var i = 0; i < rootIds.length; i++) {
+              tree.push(treeObjs[rootIds[i]]);
+          };
 
             return tree;
         }
