@@ -15,12 +15,12 @@
                     "   </thead>\n" +
                     "   <tbody>\n" +
                     "     <tr ng-repeat=\"row in tree_rows | searchFor:$parent.filterString:expandingProperty:colDefinitions track by row.branch.uid\"\n" +
-                    "       ng-click=\"user_clicks_branch(row.branch)\" ng-class=\"'level-' + {{ row.level }} + (row.branch.selected ? ' active':'')\" class=\"tree-grid-row\">\n" +
-                    "       <td><a><i ng-class=\"row.tree_icon\"\n" +
+                    "       ng-click=\"user_clicks_branch(row.branch,$event)\" ng-class=\"'level-' + {{ row.level }} + (row.branch.selected ? ' active':'')\" class=\"tree-grid-row\">\n" +
+                    "       <td> <input ng-if=\"expandingProperty.showRadio\" style=\"margin-right: 10px;\" type=\"radio\" ng-click=\"on_radio_click(row.branch,$event)\" ng-checked=\"row.branch.selected\" name=\"radio-tree-grid-select\"> <i ng-class=\"row.tree_icon\"\n" +
                     "              ng-click=\"row.branch.expanded = !row.branch.expanded\"\n" +
-                    "              class=\"indented tree-icon\"></i></a><span ng-if=\"expandingProperty.cellTemplate\" class=\"indented tree-label\" " +
-                    "              ng-click=\"on_user_click(row.branch)\" compile=\"expandingProperty.cellTemplate\"></span>" +
-                    "              <span  ng-if=\"!expandingProperty.cellTemplate\" class=\"indented tree-label\" ng-click=\"on_user_click(row.branch)\">\n" +
+                    "              class=\"indented tree-icon\"></i><span ng-if=\"expandingProperty.cellTemplate\" class=\"indented tree-label\" " +
+                    "              ng-click=\"on_user_click(row.branch,$event)\" compile=\"expandingProperty.cellTemplate\"></span>" +
+                    "              <span  ng-if=\"!expandingProperty.cellTemplate\" class=\"indented tree-label\" ng-click=\"on_user_click(row.branch,$event)\">\n" +
                     "             {{row.branch[expandingProperty.field] || row.branch[expandingProperty]}}</span>\n" +
                     "       </td>\n" +
                     "       <td ng-repeat=\"col in colDefinitions\">\n" +
@@ -106,7 +106,7 @@
                         attrs.sortedDesc = attrs.sortedDesc ? attrs.sortedDesc : 'icon-file  glyphicon glyphicon-chevron-down  fa angle-down';
                         attrs.expandLevel = attrs.expandLevel ? attrs.expandLevel : '0';
                         expand_level = parseInt(attrs.expandLevel, 10);
-
+                        
                         if (!scope.treeData) {
                             alert('No data was defined for the tree, please define treeData!');
                             return;
@@ -204,19 +204,36 @@
                                         });
                                     }
                                 }
+                            } else {
+                                branch.selected = !branch.selected;
                             }
                         };
-                        scope.on_user_click = function (branch) {
+                        scope.on_radio_click = function (branch, event) {
+                            if (window.stopClickEvent && event)
+                                window.stopClickEvent(event);
+                            if (!branch.selected){
+                                $timeout(function(){
+                                    scope.user_clicks_branch(branch, event);
+                                    console.log('radio>>>row', branch);
+                                }, 10);
+                            }
+                        };
+                        scope.on_user_click = function (branch,event) {
                             if (scope.onClick) {
                                 scope.onClick({
                                     branch: branch
                                 });
+                                if (window.stopClickEvent && event)
+                                    window.stopClickEvent(event);
                             }
                         };
-                        scope.user_clicks_branch = function (branch) {
+                        scope.user_clicks_branch = function (branch,event) {
                             //if (branch !== selected_branch) {
-                                return select_branch(branch);
+                            console.log('branch>>>row', branch);
+                            select_branch(branch);
                             //}
+                            if (window.stopClickEvent && event)
+                                window.stopClickEvent(event);
                         };
 
                         /* sorting methods */
